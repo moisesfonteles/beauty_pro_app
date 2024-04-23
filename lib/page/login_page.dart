@@ -1,3 +1,4 @@
+import 'package:beauty_pro/page/signup_page.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -11,24 +12,28 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       backgroundColor: const Color.fromRGBO(244, 244, 244, 1),
-      body: bodyLogin(),
+      body: SingleChildScrollView(child: bodyLogin(context))
     );
   }
 
-  Widget bodyLogin() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+  Widget bodyLogin(BuildContext context) {
+    return  Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
       child: Column(
-        children: [Image.asset("assets/logo.png"), loginWidget()],
+        children: [Image.asset("assets/logo.png"), loginWidget(context)],
       ),
     );
   }
 
-  Widget loginWidget() {
+  Widget loginWidget(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Email"),
+        const Text(
+          "Email",
+        ),
         TextFormField(
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
@@ -42,7 +47,8 @@ class _LoginPageState extends State<LoginPage> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: createButton('Entrar', () {}),
-        )
+        ),
+        smallButons(context)
       ],
     );
   }
@@ -54,10 +60,42 @@ Widget createButton(String label, VoidCallback onPressed) {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: onPressed,
-        child: Text(style: TextStyle(color: Colors.black), label),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
+        child: Text(style: const TextStyle(color: Colors.black), label),
       ));
+}
+
+Widget smallButons(BuildContext context) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+       InkWell(
+        onTap: () {},
+        child: const Text(
+          'Esqueceu a senha?',
+          style: TextStyle(
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+      InkWell(
+        onTap: () {
+           Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SignUpPage()),
+            );
+        },
+        child: const Text(
+          'Cadastrar-se',
+          style: TextStyle(
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      )
+    ],
+  );
+
 }
