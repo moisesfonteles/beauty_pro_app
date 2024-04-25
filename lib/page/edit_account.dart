@@ -1,19 +1,19 @@
-import 'package:beauty_pro/page/add_service_page.dart';
+import 'package:beauty_pro/page/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class EditAccount extends StatefulWidget {
+  const EditAccount({super.key});
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  State<EditAccount> createState() => _EditAccountState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _EditAccountState extends State<EditAccount> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: customAppBar(context, title: 'Cadastrar-se'),
+        appBar: customAppBar(context, title: 'Editar conta'),
         backgroundColor: const Color.fromRGBO(244, 244, 244, 1),
         body: SingleChildScrollView(child: bodySignUp()));
   }
@@ -76,11 +76,12 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          child: createButton('Continuar', () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddServicePage()),
-            );
+          child: createButton('Confirmar', () {
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()),
+                (Route<dynamic> route) => false,
+              );
           }),
         ),
       ],
@@ -133,3 +134,4 @@ Widget switchTheme() {
     onToggle: (index) {},
   );
 }
+

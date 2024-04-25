@@ -1,3 +1,4 @@
+import 'package:beauty_pro/page/home_page.dart';
 import 'package:beauty_pro/page/signup_page.dart';
 import 'package:flutter/material.dart';
 
@@ -12,15 +13,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      backgroundColor: const Color.fromRGBO(244, 244, 244, 1),
-      body: SingleChildScrollView(child: bodyLogin(context))
-    );
+        backgroundColor: const Color.fromRGBO(244, 244, 244, 1),
+        body: SingleChildScrollView(child: bodyLogin(context)));
   }
 
   Widget bodyLogin(BuildContext context) {
-    return  Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 50),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(25, 128, 25, 25),
       child: Column(
         children: [Image.asset("assets/logo.png"), loginWidget(context)],
       ),
@@ -31,22 +30,29 @@ class _LoginPageState extends State<LoginPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Email",
-        ),
         TextFormField(
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
-              border: OutlineInputBorder(), hintText: "user@email.com"),
+              border: OutlineInputBorder(),
+              hintText: "user@email.com",
+              labelText: "Email"),
         ),
-        const Text("Senha"),
+        const SizedBox(height: 15),
         TextFormField(
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: "Senha",
+            )),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          child: createButton('Entrar', () {}),
+          child: createButton('Entrar', () {
+             Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                );
+
+          }),
         ),
         smallButons(context)
       ],
@@ -64,7 +70,8 @@ Widget createButton(String label, VoidCallback onPressed) {
           backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
-        child: Text(style: const TextStyle(color: Colors.black), label),
+        child: Text(
+            style: const TextStyle(fontSize: 18, color: Colors.white), label),
       ));
 }
 
@@ -72,30 +79,31 @@ Widget smallButons(BuildContext context) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-       InkWell(
+      InkWell(
         onTap: () {},
         child: const Text(
           'Esqueceu a senha?',
           style: TextStyle(
+            fontSize: 18,
             decoration: TextDecoration.underline,
           ),
         ),
       ),
       InkWell(
         onTap: () {
-           Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SignUpPage()),
-            );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SignUpPage()),
+          );
         },
         child: const Text(
           'Cadastrar-se',
           style: TextStyle(
+            fontSize: 18,
             decoration: TextDecoration.underline,
           ),
         ),
       )
     ],
   );
-
 }
