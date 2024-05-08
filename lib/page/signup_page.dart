@@ -1,4 +1,5 @@
-import 'package:beauty_pro/page/add_service_page.dart';
+import 'package:beauty_pro/controller/signup_controller.dart';
+import 'package:beauty_pro/page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -10,6 +11,9 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+
+  final _controller = SignUpController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,6 +34,7 @@ class _SignUpPageState extends State<SignUpPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextFormField(
+          controller: _controller.nameController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
               labelText: "Nome",
@@ -38,6 +43,7 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
         const SizedBox(height: 15),
         TextFormField(
+          controller: _controller.companyController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
               labelText: "Empresa", border: OutlineInputBorder()),
@@ -52,24 +58,28 @@ class _SignUpPageState extends State<SignUpPage> {
         switchTheme(),
         const SizedBox(height: 15),
         TextFormField(
+          controller: _controller.phoneController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
               border: OutlineInputBorder(), labelText: "Telefone"),
         ),
         const SizedBox(height: 15),
         TextFormField(
+          controller: _controller.emailController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
               labelText: "Email", border: OutlineInputBorder()),
         ),
         const SizedBox(height: 15),
         TextFormField(
+          controller: _controller.passwordController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
               labelText: "Senha", border: OutlineInputBorder()),
         ),
         const SizedBox(height: 15),
         TextFormField(
+          controller: _controller.passwordConfirmationController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
               labelText: "Confirmar senha", border: OutlineInputBorder()),
@@ -79,7 +89,8 @@ class _SignUpPageState extends State<SignUpPage> {
           child: createButton('Continuar', () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const AddServicePage()),
+              // MaterialPageRoute(builder: (context) => const AddServicePage()),
+              MaterialPageRoute(builder: (context) => const LoginPage())
             );
           }),
         ),

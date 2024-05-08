@@ -1,3 +1,4 @@
+import 'package:beauty_pro/controller/login_controller.dart';
 import 'package:beauty_pro/page/home_page.dart';
 import 'package:beauty_pro/page/signup_page.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
+  final _controller = LoginController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,14 +35,15 @@ class _LoginPageState extends State<LoginPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextFormField(
+          controller: _controller.emailController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              hintText: "user@email.com",
               labelText: "Email"),
         ),
         const SizedBox(height: 15),
         TextFormField(
+          controller: _controller.passwordController,
             textInputAction: TextInputAction.next,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),

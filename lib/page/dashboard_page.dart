@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 
 
 class DashboardPage extends StatefulWidget {
@@ -26,11 +25,11 @@ class _DashboardPageState extends State<DashboardPage> {
         body: Column(children: [
           
           SfCartesianChart(
-              primaryXAxis: CategoryAxis(),
+              primaryXAxis: const CategoryAxis(),
               
-              title: ChartTitle(text: 'Gráfico de faturamento'),
+              title: const ChartTitle(text: 'Gráfico de faturamento'),
               
-              legend: Legend(isVisible: true),
+              legend: const Legend(isVisible: true),
              
               tooltipBehavior: TooltipBehavior(enable: true),
               series: <CartesianSeries<_SalesData, String>>[
@@ -40,7 +39,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     yValueMapper: (_SalesData sales, _) => sales.sales,
                     name: 'Sales',
                     
-                    dataLabelSettings: DataLabelSettings(isVisible: true))
+                    dataLabelSettings: const DataLabelSettings(isVisible: true))
               ]),
           
         ]));
