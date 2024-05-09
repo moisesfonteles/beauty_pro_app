@@ -56,7 +56,7 @@ class _SalesData {
 AppBar customAppBar(BuildContext context, {String title = ''}) {
   return AppBar(
     centerTitle: true,
-    backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+    backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
     title: Text(
       title,
       style: const TextStyle(color: Colors.white),

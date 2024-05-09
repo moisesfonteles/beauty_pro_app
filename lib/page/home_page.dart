@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: customAppBar(context, title: "Agenda"),
       drawer: Drawer(
-        backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+        backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
         child: drawerOpitions(context)
       ),
       body:  Stack(
@@ -63,58 +63,58 @@ class _HomePageState extends State<HomePage> {
           ),
           
        
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: FloatingActionButton(
-              onPressed: () {
-               showDialog(
-                context: context,
-                builder: (context){
-                  return AlertDialog(
-                    scrollable: true,
-                    title: const Text('Adiconar atendimento'),
-                    content: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        children: [
-                          TextFormField(
-                                    textInputAction: TextInputAction.next,
-                                    decoration: const InputDecoration(
-                                        labelText: "Cliente", border: OutlineInputBorder()),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  TextFormField(
-                                    textInputAction: TextInputAction.next,
-                                    decoration: const InputDecoration(
-                                        labelText: "Horario", border: OutlineInputBorder()),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  TextFormField(
-                                    textInputAction: TextInputAction.next,
-                                    decoration: const InputDecoration(
-                                        labelText: "Serviço", border: OutlineInputBorder()),
-                                  ),
+          // Positioned(
+          //   bottom: 20,
+          //   right: 20,
+          //   child: FloatingActionButton(
+          //     onPressed: () {
+          //      showDialog(
+          //       context: context,
+          //       builder: (context){
+          //         return AlertDialog(
+          //           scrollable: true,
+          //           title: const Text('Adiconar atendimento'),
+          //           content: Padding(
+          //             padding: const EdgeInsets.all(8),
+          //             child: Column(
+          //               children: [
+          //                 TextFormField(
+          //                           textInputAction: TextInputAction.next,
+          //                           decoration: const InputDecoration(
+          //                               labelText: "Cliente", border: OutlineInputBorder()),
+          //                         ),
+          //                         const SizedBox(height: 15),
+          //                         TextFormField(
+          //                           textInputAction: TextInputAction.next,
+          //                           decoration: const InputDecoration(
+          //                               labelText: "Horario", border: OutlineInputBorder()),
+          //                         ),
+          //                         const SizedBox(height: 15),
+          //                         TextFormField(
+          //                           textInputAction: TextInputAction.next,
+          //                           decoration: const InputDecoration(
+          //                               labelText: "Serviço", border: OutlineInputBorder()),
+          //                         ),
                                  
                                  
-                        ],
-                      ),
-                      ),
-                      actions: [
-                        Center(
-                          child: createButton("Adicionar", () {
-                          Navigator.of(context).pop();
-                         }),
-                        )
-                        ,
+          //               ],
+          //             ),
+          //             ),
+          //             actions: [
+          //               Center(
+          //                 child: createButton("Adicionar", () {
+          //                 Navigator.of(context).pop();
+          //                }),
+          //               )
+          //               ,
                         
-                        ],
-                  );
-                } );
-              },
-              child: Icon(Icons.add),
-            ),
-          ),
+          //               ],
+          //         );
+          //       } );
+          //     },
+          //     child: Icon(Icons.add),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -127,7 +127,7 @@ class _HomePageState extends State<HomePage> {
 AppBar customAppBar(BuildContext context, {String title = ''}) {
   return AppBar(
     centerTitle: true,
-    backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+    backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
     title: Text(
       title,
       style: const TextStyle(color: Colors.white),
@@ -142,7 +142,7 @@ Widget createButton(String label, VoidCallback onPressed) {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+          backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         child: Text(

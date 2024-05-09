@@ -46,7 +46,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   return ElevatedButton(
                     onPressed: () => snapshot.data ?? false ? () {} : _controller.recoverPassword(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+                      backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     ),
                     child: snapshot.data ?? false ? const CircularProgressIndicator(color: Colors.white) : const Text(style: TextStyle(fontSize: 18, color: Colors.white), "Enviar"),
@@ -63,7 +63,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   AppBar customAppBar(BuildContext context, {String title = ''}) {
     return AppBar(
       centerTitle: true,
-      backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+      backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
       title: Text(
         title,
         style: const TextStyle(color: Colors.white),

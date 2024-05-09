@@ -49,17 +49,17 @@ class _SignUpPageState extends State<SignUpPage> {
             controller: _controller.companyController,
             textInputAction: TextInputAction.next,
             decoration: const InputDecoration(
-                labelText: "Empresa", border: OutlineInputBorder()),
-            validator: (company) => _controller.validator(company, "Nome da empresa"),
+                labelText: "Serviço/Profissão", border: OutlineInputBorder()),
+            validator: (company) => _controller.validator(company, "Serviço/Profissão"),
           ),
-          const SizedBox(height: 15),
-          const Text(
-            "Tema",
-            style: TextStyle(
-              fontSize: 16,
-            ),
-          ),
-          switchTheme(),
+          // const SizedBox(height: 15),
+          // const Text(
+          //   "Tema",
+          //   style: TextStyle(
+          //     fontSize: 16,
+          //   ),
+          // ),
+          // switchTheme(),
           const SizedBox(height: 15),
           TextFormField(
             controller: _controller.phoneController,
@@ -131,7 +131,7 @@ Widget createButton(String label, VoidCallback onPressed, bool signingUp) {
       child: ElevatedButton(
         onPressed: signingUp ? () {} : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+          backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         child: signingUp ? const CircularProgressIndicator(color: Colors.white) : Text(
@@ -142,7 +142,7 @@ Widget createButton(String label, VoidCallback onPressed, bool signingUp) {
 AppBar customAppBar(BuildContext context, {String title = ''}) {
   return AppBar(
     centerTitle: true,
-    backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+    backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
     title: Text(
       title,
       style: const TextStyle(color: Colors.white),
@@ -156,7 +156,7 @@ Widget switchTheme() {
     minWidth: double.infinity,
     cornerRadius: 8,
     activeBgColors: const [
-      [Color.fromRGBO(39, 144, 176, 1)],
+      [Color.fromRGBO(20, 28, 95, 1)],
       [Color.fromRGBO(242, 88, 114, 1)]
     ],
     activeFgColor: Colors.white,

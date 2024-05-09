@@ -15,7 +15,7 @@ Future<void> main() async {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         buttonTheme:const ButtonThemeData (
-          buttonColor: Color.fromRGBO(39, 144, 176, 1),
+          buttonColor: Color.fromRGBO(20, 28, 95, 1),
         ),
         appBarTheme: const AppBarTheme(
             iconTheme: IconThemeData(color: Colors.white)),
