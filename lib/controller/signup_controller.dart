@@ -91,7 +91,7 @@ class SignUpController{
         signingUp = false;
         signingUpController.sink.add(signingUp);
       } else {
-        // _userAuthentication.logout();
+        _userAuthentication.logout();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Cadastro realizado com sucesso"),

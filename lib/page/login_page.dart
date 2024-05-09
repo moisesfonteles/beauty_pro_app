@@ -1,4 +1,5 @@
 import 'package:beauty_pro/controller/login_controller.dart';
+import 'package:beauty_pro/page/forgot_password.dart';
 import 'package:beauty_pro/page/signup_page.dart';
 import 'package:flutter/material.dart';
 
@@ -90,7 +91,8 @@ Widget createButton(String label, VoidCallback onPressed, bool loggingIn) {
         ),
         child: loggingIn ? const CircularProgressIndicator(color: Colors.white) : Text(
             style: const TextStyle(fontSize: 18, color: Colors.white), label),
-      ));
+      )
+    );
 }
 
 Widget smallButons(BuildContext context, bool loggingIn) {
@@ -98,7 +100,7 @@ Widget smallButons(BuildContext context, bool loggingIn) {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       InkWell(
-        onTap: loggingIn ? () {} : () {},
+        onTap: loggingIn ? () {} : () => Navigator.push(context, MaterialPageRoute(builder:(context) => const ForgotPassword(),)),
         child: const Text(
           'Esqueceu a senha?',
           style: TextStyle(

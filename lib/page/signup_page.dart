@@ -114,7 +114,7 @@ class _SignUpPageState extends State<SignUpPage> {
             builder: (context, snapshot) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                child: createButton('Continuar', () => _controller.registerUser(context), snapshot.data ?? false),
+                child: createButton('Cadastrar', () => _controller.registerUser(context), snapshot.data ?? false),
               );
             }
           ),

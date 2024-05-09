@@ -36,7 +36,9 @@ class UserAuthentication{
     } on FirebaseAuthException catch(e) {
       if(e.message == "The supplied auth credential is incorrect, malformed or has expired.") {
         return "Erro de Login! Verifique se você digitou corretamente seu nome de usuário e senha.";
-      } else {
+      } else if(e.message == "The email address is badly formatted."){
+        return "O e-mail está mal formatado";
+      }else {
         return e.message;
       }
     }
@@ -44,6 +46,19 @@ class UserAuthentication{
 
   Future<void> logout() async {
     return firebaseAuth.signOut();
+  }
+
+  Future<String?> recoverPassword(String email) async {
+    try{
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+      return null;
+    } on FirebaseAuthException catch(e) {
+      if(e.message == "The email address is badly formatted.") {
+        return "O e-mail está mal formatado";
+      } else {
+        return e.message;
+      }
+    }
   }
 
 }
