@@ -79,7 +79,7 @@ class _EditAccountState extends State<EditAccount> {
           child: createButton('Confirmar', () {
             Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
+                MaterialPageRoute(builder: (context) => HomePage()),
                 (Route<dynamic> route) => false,
               );
           }),

@@ -7,7 +7,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  String? email;
+  HomePage({super.key, this.email});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -35,7 +36,7 @@ class _HomePageState extends State<HomePage> {
       appBar: customAppBar(context, title: "Agenda"),
       drawer: Drawer(
         backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
-        child: drawerOpitions(context)
+        child: drawerOpitions(context, widget.email!)
       ),
       body:  Stack(
         children: [
@@ -63,58 +64,58 @@ class _HomePageState extends State<HomePage> {
           ),
           
        
-          // Positioned(
-          //   bottom: 20,
-          //   right: 20,
-          //   child: FloatingActionButton(
-          //     onPressed: () {
-          //      showDialog(
-          //       context: context,
-          //       builder: (context){
-          //         return AlertDialog(
-          //           scrollable: true,
-          //           title: const Text('Adiconar atendimento'),
-          //           content: Padding(
-          //             padding: const EdgeInsets.all(8),
-          //             child: Column(
-          //               children: [
-          //                 TextFormField(
-          //                           textInputAction: TextInputAction.next,
-          //                           decoration: const InputDecoration(
-          //                               labelText: "Cliente", border: OutlineInputBorder()),
-          //                         ),
-          //                         const SizedBox(height: 15),
-          //                         TextFormField(
-          //                           textInputAction: TextInputAction.next,
-          //                           decoration: const InputDecoration(
-          //                               labelText: "Horario", border: OutlineInputBorder()),
-          //                         ),
-          //                         const SizedBox(height: 15),
-          //                         TextFormField(
-          //                           textInputAction: TextInputAction.next,
-          //                           decoration: const InputDecoration(
-          //                               labelText: "Serviço", border: OutlineInputBorder()),
-          //                         ),
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: () {
+               showDialog(
+                context: context,
+                builder: (context){
+                  return AlertDialog(
+                    scrollable: true,
+                    title: const Text('Adiconar atendimento'),
+                    content: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        children: [
+                          TextFormField(
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(
+                                        labelText: "Cliente", border: OutlineInputBorder()),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  TextFormField(
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(
+                                        labelText: "Horario", border: OutlineInputBorder()),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  TextFormField(
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(
+                                        labelText: "Serviço", border: OutlineInputBorder()),
+                                  ),
                                  
                                  
-          //               ],
-          //             ),
-          //             ),
-          //             actions: [
-          //               Center(
-          //                 child: createButton("Adicionar", () {
-          //                 Navigator.of(context).pop();
-          //                }),
-          //               )
-          //               ,
+                        ],
+                      ),
+                      ),
+                      actions: [
+                        Center(
+                          child: createButton("Adicionar", () {
+                          Navigator.of(context).pop();
+                         }),
+                        )
+                        ,
                         
-          //               ],
-          //         );
-          //       } );
-          //     },
-          //     child: Icon(Icons.add),
-          //   ),
-          // ),
+                        ],
+                  );
+                } );
+              },
+              child: Icon(Icons.add),
+            ),
+          ),
         ],
       ),
     );
@@ -150,7 +151,7 @@ Widget createButton(String label, VoidCallback onPressed) {
       ));
 }
 
-Widget drawerOpitions (BuildContext context){
+Widget drawerOpitions (BuildContext context, String email){
   return Padding(
     padding: const EdgeInsets.fromLTRB(5, 128, 5, 5),
     child: Column(
@@ -167,8 +168,9 @@ Widget drawerOpitions (BuildContext context){
                   );
                 },
                 icon: const Icon(Icons.person , size: 40, color: Colors.white),
-                label: const Text('Editar conta',
-                style: TextStyle(
+                label: Text('$email',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
                   fontSize: 18,
                   color: Colors.white
                 ),

@@ -40,7 +40,6 @@ class _SignUpPageState extends State<SignUpPage> {
             decoration: const InputDecoration(
                 labelText: "Nome",
                 border: OutlineInputBorder(),
-                hintText: "user@email.com"
             ),
             validator: (name) => _controller.validator(name, "Nome"),
           ),
