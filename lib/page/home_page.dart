@@ -2,7 +2,7 @@
 import 'package:beauty_pro/page/dashboard_page.dart';
 import 'package:beauty_pro/page/edit_account.dart';
 import 'package:beauty_pro/page/edit_add_service_page.dart';
-import 'package:beauty_pro/page/login_page.dart';
+import 'package:beauty_pro/services/user_authentication.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +14,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  // final _controller = HomeController();
+
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
   late DateTime _selectedDay;
@@ -70,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                 builder: (context){
                   return AlertDialog(
                     scrollable: true,
-                    title: Text('Adiconar atendimento'),
+                    title: const Text('Adiconar atendimento'),
                     content: Padding(
                       padding: const EdgeInsets.all(8),
                       child: Column(
@@ -161,7 +164,7 @@ Widget drawerOpitions (BuildContext context){
                   Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const EditAccount()),
-);
+                  );
                 },
                 icon: const Icon(Icons.person , size: 40, color: Colors.white),
                 label: const Text('Editar conta',
@@ -208,13 +211,7 @@ Widget drawerOpitions (BuildContext context){
               
            
               TextButton.icon(
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-                (Route<dynamic> route) => false,
-              );
-                },
+                onPressed: () => UserAuthentication().logout(),
                 icon: const Icon(Icons.exit_to_app, size: 40, color: Colors.white), 
                 label: const Text('Sair',
                 style: TextStyle(

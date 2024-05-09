@@ -1,5 +1,4 @@
 import 'package:beauty_pro/controller/login_controller.dart';
-import 'package:beauty_pro/page/home_page.dart';
 import 'package:beauty_pro/page/signup_page.dart';
 import 'package:flutter/material.dart';
 
@@ -31,61 +30,75 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget loginWidget(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: _controller.emailController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "Email"),
-        ),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _controller.passwordController,
-            textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "Senha",
-            )),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: createButton('Entrar', () {
-             Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
-                );
-
-          }),
-        ),
-        smallButons(context)
-      ],
+    return StreamBuilder<bool>(
+      initialData: false,
+      stream: _controller.loggingInController.stream,
+      builder: (context, snapshot) {
+        return Form(
+          key: _controller.formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _controller.emailController,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Email"),
+                validator: (email) => _controller.validator(email, "E-mail"),
+              ),
+              const SizedBox(height: 15),
+              StreamBuilder<bool>(
+                stream: _controller.togglePasswordController.stream,
+                initialData: true,
+                builder: (context, snapshot) {
+                  return TextFormField(
+                    controller: _controller.passwordController,
+                      textInputAction: TextInputAction.next,
+                      obscureText: snapshot.data ?? true,
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(onPressed: () => _controller.togglePassword(), icon: snapshot.data == true ? const Icon(Icons.visibility_off) : const Icon(Icons.visibility)),
+                        border: const OutlineInputBorder(),
+                        labelText: "Senha",
+                      ),
+                      validator: (password) => _controller.validator(password, "Senha"),
+                      );
+                }
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: createButton('Entrar', () => _controller.loginUser(context), snapshot.data ?? false),
+              ),
+              smallButons(context, snapshot.data ?? false)
+            ],
+          ),
+        );
+      }
     );
   }
 }
 
-Widget createButton(String label, VoidCallback onPressed) {
+Widget createButton(String label, VoidCallback onPressed, bool loggingIn) {
   return SizedBox(
       height: 65,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed:loggingIn ? () {} : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
-        child: Text(
+        child: loggingIn ? const CircularProgressIndicator(color: Colors.white) : Text(
             style: const TextStyle(fontSize: 18, color: Colors.white), label),
       ));
 }
 
-Widget smallButons(BuildContext context) {
+Widget smallButons(BuildContext context, bool loggingIn) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       InkWell(
-        onTap: () {},
+        onTap: loggingIn ? () {} : () {},
         child: const Text(
           'Esqueceu a senha?',
           style: TextStyle(
@@ -96,6 +109,7 @@ Widget smallButons(BuildContext context) {
       ),
       InkWell(
         onTap: () {
+          loggingIn ? () {} :
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const SignUpPage()),

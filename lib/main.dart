@@ -1,4 +1,6 @@
+import 'package:beauty_pro/page/home_page.dart';
 import 'package:beauty_pro/page/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -19,7 +21,25 @@ Future<void> main() async {
             iconTheme: IconThemeData(color: Colors.white)),
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(),
+      home: const UserAuth(),
     )
   );
+}
+
+class UserAuth extends StatelessWidget {
+  const UserAuth({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.userChanges(),
+      builder: (context, snapshot) {
+        if(snapshot.hasData) {          
+          return const HomePage();
+        } else {
+          return const LoginPage();
+        }
+      },
+    );
+  }
 }

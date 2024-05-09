@@ -1,5 +1,4 @@
 import 'package:beauty_pro/controller/signup_controller.dart';
-import 'package:beauty_pro/page/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -30,86 +29,112 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Widget signUpWidget() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: _controller.nameController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-              labelText: "Nome",
-              border: OutlineInputBorder(),
-              hintText: "user@email.com"),
-        ),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _controller.companyController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-              labelText: "Empresa", border: OutlineInputBorder()),
-        ),
-        const SizedBox(height: 15),
-        const Text(
-          "Tema",
-          style: TextStyle(
-            fontSize: 16,
+    return Form(
+      key: _controller.formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            controller: _controller.nameController,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+                labelText: "Nome",
+                border: OutlineInputBorder(),
+                hintText: "user@email.com"
+            ),
+            validator: (name) => _controller.validator(name, "Nome"),
           ),
-        ),
-        switchTheme(),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _controller.phoneController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(), labelText: "Telefone"),
-        ),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _controller.emailController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-              labelText: "Email", border: OutlineInputBorder()),
-        ),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _controller.passwordController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-              labelText: "Senha", border: OutlineInputBorder()),
-        ),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _controller.passwordConfirmationController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-              labelText: "Confirmar senha", border: OutlineInputBorder()),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: createButton('Continuar', () {
-            Navigator.push(
-              context,
-              // MaterialPageRoute(builder: (context) => const AddServicePage()),
-              MaterialPageRoute(builder: (context) => const LoginPage())
-            );
-          }),
-        ),
-      ],
+          const SizedBox(height: 15),
+          TextFormField(
+            controller: _controller.companyController,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+                labelText: "Empresa", border: OutlineInputBorder()),
+            validator: (company) => _controller.validator(company, "Nome da empresa"),
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            "Tema",
+            style: TextStyle(
+              fontSize: 16,
+            ),
+          ),
+          switchTheme(),
+          const SizedBox(height: 15),
+          TextFormField(
+            controller: _controller.phoneController,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+                border: OutlineInputBorder(), labelText: "Telefone"),
+            validator: (phone) => _controller.validator(phone, "Telefone"),
+          ),
+          const SizedBox(height: 15),
+          TextFormField(
+            controller: _controller.emailController,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+                labelText: "Email", border: OutlineInputBorder()),
+            validator: (email) => _controller.validatorEmail(email),
+          ),
+          const SizedBox(height: 15),
+          StreamBuilder<bool>(
+            stream: _controller.togglePasswordController.stream,
+            initialData: true,
+            builder: (context, snapshot) {
+              return TextFormField(
+                controller: _controller.passwordController,
+                obscureText: snapshot.data ?? true,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  suffixIcon: IconButton(onPressed: () => _controller.togglePassword(), icon: snapshot.data == true ? const Icon(Icons.visibility_off) : const Icon(Icons.visibility)),
+                  labelText: "Senha", border: const OutlineInputBorder()),
+                  validator: (password) => _controller.validatorPassword(password),
+              );
+            }
+          ),
+          const SizedBox(height: 15),
+          StreamBuilder<bool>(
+            stream: _controller.togglePasswordConfirmationController.stream,
+            initialData: true,
+            builder: (context, snapshot) {
+              return TextFormField(
+                controller: _controller.passwordConfirmationController,
+                obscureText: snapshot.data ?? true,
+                textInputAction: TextInputAction.go,
+                decoration: InputDecoration(
+                  suffixIcon: IconButton(onPressed: () => _controller.togglePasswordConfirmation(), icon: snapshot.data == true ? const Icon(Icons.visibility_off) : const Icon(Icons.visibility)),
+                  labelText: "Confirmar senha", border: const OutlineInputBorder()),
+                validator: (passwordConfirmation) => _controller.validatorPasswordConfirmation(passwordConfirmation),
+              );
+            }
+          ),
+          StreamBuilder<bool>(
+            initialData: false,
+            stream: _controller.signingUpController.stream,
+            builder: (context, snapshot) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: createButton('Continuar', () => _controller.registerUser(context), snapshot.data ?? false),
+              );
+            }
+          ),
+        ],
+      ),
     );
   }
 }
 
-Widget createButton(String label, VoidCallback onPressed) {
+Widget createButton(String label, VoidCallback onPressed, bool signingUp) {
   return SizedBox(
       height: 65,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: signingUp ? () {} : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
-        child: Text(
+        child: signingUp ? const CircularProgressIndicator(color: Colors.white) : Text(
             style: const TextStyle(fontSize: 18, color: Colors.white), label),
       ));
 }
