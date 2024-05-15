@@ -1,10 +1,15 @@
 
+import 'dart:ffi';
+
+import 'package:beauty_pro/model/event.dart';
 import 'package:beauty_pro/page/dashboard_page.dart';
 import 'package:beauty_pro/page/edit_account.dart';
 import 'package:beauty_pro/page/edit_add_service_page.dart';
 import 'package:beauty_pro/services/user_authentication.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,8 +19,46 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  TextEditingController customer = TextEditingController();
+  TextEditingController service = TextEditingController();
+  TextEditingController price = TextEditingController();
+  TextEditingController hour = TextEditingController();
+  
+final _userAuthentication = UserAuthentication();
 
+
+
+late String userID = _userAuthentication.getCurrentUserId() ?? "";
   // final _controller = HomeController();
+
+
+Map<DateTime, List<Event>> _eventsMap = {};
+
+
+void getEvents () {
+  
+_userAuthentication.fetchEventsFromFirestore(userID).then((events){
+  Map<DateTime, List<Event>> _events = {};
+for (Event event in events) {
+    DateTime dateKey =  DateTime(event.date.year, event.date.month, event.date.day);
+    
+    _events.putIfAbsent(dateKey, () => []).add(event);
+  }
+  print(_events);
+  setState(() {
+  _eventsMap = _events;
+});
+});
+
+
+}
+
+List<Event> _getEventsForDay(DateTime dateKey) {
+  
+  return _eventsMap[dateKey] ?? [];
+}
+
+
 
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
@@ -27,6 +70,9 @@ class _HomePageState extends State<HomePage> {
     _calendarFormat = CalendarFormat.month;
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
+    getEvents();
+    
+
   }
 
   @override
@@ -41,6 +87,13 @@ class _HomePageState extends State<HomePage> {
         children: [
         
           TableCalendar(
+            
+            eventLoader: (day) {
+                    final teste = _getEventsForDay(day);
+                    print(teste);
+                   return _getEventsForDay(day);
+                   },
+            locale: 'pt_BR',
             firstDay: DateTime.utc(2000, 1, 1),
             lastDay: DateTime.utc(2100, 1, 1),
             focusedDay: _focusedDay,
@@ -50,6 +103,7 @@ class _HomePageState extends State<HomePage> {
                 _calendarFormat = format;
               });
             },
+            
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
                 _selectedDay = selectedDay;
@@ -79,22 +133,33 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         children: [
                           TextFormField(
+                            controller: customer,
+                                    
                                     textInputAction: TextInputAction.next,
                                     decoration: const InputDecoration(
                                         labelText: "Cliente", border: OutlineInputBorder()),
                                   ),
                                   const SizedBox(height: 15),
                                   TextFormField(
+                                    controller: hour,
                                     textInputAction: TextInputAction.next,
                                     decoration: const InputDecoration(
                                         labelText: "Horario", border: OutlineInputBorder()),
                                   ),
                                   const SizedBox(height: 15),
                                   TextFormField(
+                                    controller: service,
                                     textInputAction: TextInputAction.next,
                                     decoration: const InputDecoration(
                                         labelText: "Serviço", border: OutlineInputBorder()),
                                   ),
+                                  TextFormField(
+                                    controller: price,
+                                    textInputAction: TextInputAction.next,
+                                    decoration: const InputDecoration(
+                                        labelText: "Preço", border: OutlineInputBorder()),
+                                  ),
+                                  
                                  
                                  
                         ],
@@ -103,6 +168,18 @@ class _HomePageState extends State<HomePage> {
                       actions: [
                         Center(
                           child: createButton("Adicionar", () {
+                           if (userID != null) {
+                              _userAuthentication.addEventToUser(userID, customer.text, service.text, _selectedDay, hour.text, double.parse(price.text));
+                                 } else {
+                                    print("ID do usuário não está disponível.");
+                                  }
+                                  setState(() {
+                                    
+                                    getEvents();
+                                    
+                                  });
+                                  
+                                 
                           Navigator.of(context).pop();
                          }),
                         )
