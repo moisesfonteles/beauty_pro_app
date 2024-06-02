@@ -257,19 +257,15 @@ Map<DateTime, List<Event>> _eventsMap = {};
               actions: [
                 Center(
                   child: createButton("Adicionar", () {
-                    if (userID != null) {
                       _userAuthentication.addEventToUser(userID, customer.text, service.text, _selectedDay, hour.text, double.parse(price.text));
-                          } else {
-                            print("ID do usuário não está disponível.");
-                          }
-                          setState(() {
-                            
-                            getEvents();
-                            
-                          });
-                          
-                          
+                    setState(() {
+                      getEvents();
+                    });    
                   Navigator.of(context).pop();
+                  customer.clear();
+                  service.clear();
+                  hour.clear();
+                  price.clear();
                   }),
                 )
                 ,
