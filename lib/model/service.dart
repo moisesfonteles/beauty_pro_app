@@ -1,16 +1,16 @@
 class ServiceModel {
-  final String customer;
-  final String service;
-  final String date;
-  final String hour;
-  final String price;
+  final String? customer;
+  final String? service;
+  final String? date;
+  final String? hour;
+  final String? price;
 
-  ServiceModel({
-    required this.customer,
-    required this.service,
-    required this.date,
-    required this.hour,
-    required this.price,
+  ServiceModel({ 
+    this.customer,
+    this.service,
+    this.date,
+    this.hour,
+    this.price
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {

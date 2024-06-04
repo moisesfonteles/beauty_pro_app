@@ -6,6 +6,7 @@ import 'package:beauty_pro/page/dashboard_page.dart';
 import 'package:beauty_pro/page/edit_account.dart';
 import 'package:beauty_pro/page/edit_add_service_page.dart';
 import 'package:beauty_pro/services/user_authentication.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +24,9 @@ class _HomePageState extends State<HomePage> {
   TextEditingController service = TextEditingController();
   TextEditingController price = TextEditingController();
   TextEditingController hour = TextEditingController();
-  Future<List<ServiceModel>>? _serviceFuture;
+  final _serviceController = BehaviorSubject<List<ServiceModel>>();
+
+  List<ServiceModel>? services;
 
   final _userAuthentication = UserAuthentication();
 
@@ -42,19 +45,29 @@ class _HomePageState extends State<HomePage> {
     _calendarFormat = CalendarFormat.month;
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
-    _serviceFuture = _getEvents();
+    initHome();
   }
 
-  Future<List<ServiceModel>> _getEvents() async {
+  Future<void> initHome() async {
+    services = await _getEvents();
+    _serviceController.sink.add(services ?? []);
+  }
+
+  Future<List<ServiceModel>?> _getEvents() async {
     final url = Uri.parse("http://192.168.124.197:3000/listar/$userID");
     final response = await http.get(url);
-  
-    if (response.statusCode == 200) {
-      log(response.body);
-      final json = jsonDecode(response.body);
-      return json.map((item) => ServiceModel.fromJson(item));
-    } else {
-      throw Exception('Falha ao obter serviços');
+
+    try{
+      if (response.statusCode == 200) {
+        log(response.body);
+        final json = jsonDecode(response.body);
+        return json.map((item) => ServiceModel.fromJson(item));
+      } else {
+        log("${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      return null;
     }
   }
 
@@ -122,18 +135,18 @@ class _HomePageState extends State<HomePage> {
             },
             headerVisible: true,
           ),
-          FutureBuilder<List<ServiceModel>>(
-            future: _serviceFuture,
+          StreamBuilder<List<ServiceModel>>(
+            stream: _serviceController.stream,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                final services = snapshot.data?.toList() ?? [];
+                List<ServiceModel> services = snapshot.data ?? [];
                 return ListView.builder(
                   itemCount: services.length,
                   itemBuilder: (context, index) {
-                    final service = services[index];
+                    ServiceModel service = services[index];
                     return ListTile(
-                      title: Text(service.customer),
-                      subtitle: Text(service.price),
+                      title: Text(service.customer ?? "Cliente indisponível"),
+                      subtitle: Text(service.price ?? "Preço indisponível"),
                       trailing: Text('\$${service.service}'),
                     );
                   },
@@ -144,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                 return const CircularProgressIndicator();
               }
             },
-          )
+          ),
         ],
       ),
     );

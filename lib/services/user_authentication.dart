@@ -9,7 +9,7 @@ class UserAuthentication{
 
   Future<String?> registerUser({
     required String name,
-    required String company,
+    required String job,
     required String phone,
     required String email,
     required String password
@@ -22,10 +22,10 @@ class UserAuthentication{
 
       await userCredential.user!.updateDisplayName(name);
 
-      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+      await FirebaseFirestore.instance.collection('userIjobs').doc(userCredential.user!.uid).set({
       'name': name,
       'email': email,
-      'company': company,
+      'job': job,
       'phone': phone,
     });
 
@@ -96,6 +96,7 @@ class UserAuthentication{
 
  
 }
+
  String? getCurrentUserId() {
   FirebaseAuth auth = FirebaseAuth.instance;
   User? user = auth.currentUser;
