@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:beauty_pro/model/event.dart';
+import 'package:beauty_pro/model/service.dart';
 import 'package:beauty_pro/page/dashboard_page.dart';
 import 'package:beauty_pro/page/edit_account.dart';
 import 'package:beauty_pro/page/edit_add_service_page.dart';
 import 'package:beauty_pro/services/user_authentication.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   String? email;
@@ -20,13 +23,14 @@ class _HomePageState extends State<HomePage> {
   TextEditingController service = TextEditingController();
   TextEditingController price = TextEditingController();
   TextEditingController hour = TextEditingController();
+  Future<List<ServiceModel>>? _serviceFuture;
 
   final _userAuthentication = UserAuthentication();
 
   late String userID = _userAuthentication.getCurrentUserId() ?? "";
   // final _controller = HomeController();
 
-  Map<DateTime, List<Event>> _eventsMap = {};
+  final Map<DateTime, List<Event>> _eventsMap = {};
 
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
@@ -38,27 +42,47 @@ class _HomePageState extends State<HomePage> {
     _calendarFormat = CalendarFormat.month;
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
-    getEvents();
+    _serviceFuture = _getEvents();
   }
 
-  void getEvents() {
-    _userAuthentication.fetchEventsFromFirestore(userID).then((events) {
-      Map<DateTime, List<Event>> _events = {};
-      for (Event event in events) {
-        DateTime dateKey =
-            DateTime(event.date.year, event.date.month, event.date.day);
-
-        _events.putIfAbsent(dateKey, () => []).add(event);
-      }
-      log("$_events");
-      setState(() {
-        _eventsMap = _events;
-      });
-    });
+  Future<List<ServiceModel>> _getEvents() async {
+    final url = Uri.parse("http://192.168.124.197:3000/listar/$userID");
+    final response = await http.get(url);
+  
+    if (response.statusCode == 200) {
+      log(response.body);
+      final json = jsonDecode(response.body);
+      return json.map((item) => ServiceModel.fromJson(item));
+    } else {
+      throw Exception('Falha ao obter serviços');
+    }
   }
 
   List<Event> _getEventsForDay(DateTime dateKey) {
     return _eventsMap[dateKey] ?? [];
+  }
+
+  Future<void> sendServiceToApi(
+      String userIdApi,
+      String custumerApi,
+      String serviceApi,
+      String dataApi,
+      String hourApi,
+      String valueApi) async {
+    final url = Uri.parse("http://192.168.124.197:3000/registrar");
+    final response = await http.post(url,
+        headers: {'Content-Type': "application/json"},
+        body: json.encode({
+          'userId': userIdApi,
+          'customer': custumerApi,
+          'service': serviceApi,
+          'date': dataApi,
+          'hour': hourApi,
+          'price': valueApi
+        }));
+    if (response.statusCode != 200) {
+      log("Não foi possível registrar o serviço no banco de dados");
+    }
   }
 
   @override
@@ -98,6 +122,29 @@ class _HomePageState extends State<HomePage> {
             },
             headerVisible: true,
           ),
+          FutureBuilder<List<ServiceModel>>(
+            future: _serviceFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final services = snapshot.data?.toList() ?? [];
+                return ListView.builder(
+                  itemCount: services.length,
+                  itemBuilder: (context, index) {
+                    final service = services[index];
+                    return ListTile(
+                      title: Text(service.customer),
+                      subtitle: Text(service.price),
+                      trailing: Text('\$${service.service}'),
+                    );
+                  },
+                );
+              } else if (snapshot.hasError) {
+                return const Text('Não foi possível carregar os Serviços');
+              } else {
+                return const CircularProgressIndicator();
+              }
+            },
+          )
         ],
       ),
     );
@@ -121,7 +168,7 @@ class _HomePageState extends State<HomePage> {
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+            backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           ),
@@ -130,7 +177,7 @@ class _HomePageState extends State<HomePage> {
         ));
   }
 
-  Widget drawerOpitions(BuildContext context) {
+  Widget drawerOpitions(BuildContext context, String email) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 128, 5, 5),
       child: Column(
@@ -145,9 +192,9 @@ class _HomePageState extends State<HomePage> {
               );
             },
             icon: const Icon(Icons.person, size: 40, color: Colors.white),
-            label: const Text(
-              'Editar conta',
-              style: TextStyle(fontSize: 18, color: Colors.white),
+            label: Text(
+              email,
+              style: const TextStyle(fontSize: 18, color: Colors.white),
             ),
           ),
           TextButton.icon(
@@ -236,15 +283,20 @@ class _HomePageState extends State<HomePage> {
                 actions: [
                   Center(
                     child: createButton("Adicionar", () {
-                      _userAuthentication.addEventToUser(
-                          userID,
-                          customer.text,
-                          service.text,
-                          _selectedDay,
-                          hour.text,
-                          double.parse(price.text));
+                      sendServiceToApi(
+                              userID.toString(),
+                              customer.text,
+                              service.text,
+                              _selectedDay.toIso8601String(),
+                              hour.text,
+                              price.text)
+                          .catchError((error) => ScaffoldMessenger.of(context)
+                              .showSnackBar(SnackBar(
+                                  content: Text(
+                                      'Falha ao adicionar evento: $error'))));
+
                       setState(() {
-                        getEvents();
+                        _getEvents();
                       });
                       Navigator.of(context).pop();
                       customer.clear();
