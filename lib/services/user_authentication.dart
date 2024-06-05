@@ -124,9 +124,10 @@ Future<List<Event>> fetchEventsFromFirestore(String userID) async {
       String customer = doc['customer'];
       String hour = doc['hour'];
       double price = doc['price'];
-      String service = doc['service']; // Replace with actual property name
+      String service = doc['service'];
+      String eventId = doc.id;
 
-      events.add(Event(date: date, customer: customer, hour: hour, price: price, service: service));
+     events.add(Event(id: eventId, date: date, customer: customer, hour: hour, price: price, service: service));
     });
   } catch (error) {
     print('Error fetching events: $error');
@@ -135,5 +136,80 @@ Future<List<Event>> fetchEventsFromFirestore(String userID) async {
   return events;
 }
 
+Future<void> deleteEventFromFirestore(String userID, String eventId) async {
+  try {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .collection('events')
+        .doc(eventId)
+        .delete();
+    print('Evento excluído com sucesso');
+  } catch (error) {
+    print('Erro ao excluir evento: $error');
+  }
+}
 
+Future<Map<int, Map<String, dynamic>>> fetchMonthlySummary(String userID) async {
+  final Map<int, Map<String, dynamic>> result = {};
+
+  try {
+    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .collection('events')
+        .get();
+
+    int currentYear = DateTime.now().year;
+
+    snapshot.docs.forEach((doc) {
+      Timestamp timestamp = doc['date'];
+      DateTime date = timestamp.toDate();
+      double price = doc['price'];
+
+      if (date.year == currentYear) {
+        int month = date.month;
+        if (!result.containsKey(month)) {
+          result[month] = {
+            'totalDocs': 0,
+            'totalPrice': 0.0,
+          };
+        }
+        result[month]!['totalDocs']++;
+        result[month]!['totalPrice'] += price;
+      }
+    });
+  } catch (error) {
+    print('Error fetching events: $error');
+  }
+
+  return result;
+}
+
+Future<Map<String, dynamic>> fetchYearlySummary(String userID) async {
+  final Map<String, dynamic> summary = {
+    'totalDocs': 0,
+    'totalPrice': 0.0,
+  };
+
+  try {
+    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .collection('events')
+        .get();
+
+    snapshot.docs.forEach((doc) {
+      double price = doc['price'];
+
+      summary['totalPrice'] += price;
+
+      summary['totalDocs']++;
+    });
+  } catch (error) {
+    print('Error fetching yearly summary: $error');
+  }
+
+  return summary;
+}
 }

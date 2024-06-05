@@ -4,6 +4,7 @@ import 'package:beauty_pro/model/event.dart';
 import 'package:beauty_pro/page/dashboard_page.dart';
 import 'package:beauty_pro/page/edit_account.dart';
 import 'package:beauty_pro/page/edit_add_service_page.dart';
+import 'package:beauty_pro/page/event_details_page.dart';
 import 'package:beauty_pro/services/user_authentication.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,7 @@ late String userID = _userAuthentication.getCurrentUserId() ?? "";
 
 
 Map<DateTime, List<Event>> _eventsMap = {};
+bool _isLoading = true;
 
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
@@ -39,34 +41,44 @@ Map<DateTime, List<Event>> _eventsMap = {};
   void initState() {
     super.initState();
     _calendarFormat = CalendarFormat.month;
-    _focusedDay = DateTime.now();
-    _selectedDay = DateTime.now();
-    getEvents();
+    _focusedDay = DateTime.now().toUtc();
+    _selectedDay = DateTime.now().toUtc();
+    loadEvents();
+   
   }
 
-  void getEvents () {
-    _userAuthentication.fetchEventsFromFirestore(userID).then((events){
-      Map<DateTime, List<Event>> _events = {};
-    for (Event event in events) {
-        DateTime dateKey =  DateTime(event.date.year, event.date.month, event.date.day);
-        
+
+
+
+ Future<void> loadEvents() async {
+    try {
+      final events = await _userAuthentication.fetchEventsFromFirestore(userID);
+      final Map<DateTime, List<Event>> _events = {};
+      for (Event event in events) {
+        DateTime dateKey = DateTime.utc(event.date.year, event.date.month, event.date.day);
         _events.putIfAbsent(dateKey, () => []).add(event);
       }
-      log("$_events");
       setState(() {
-      _eventsMap = _events;
-    });
-  });
-
-
+        _eventsMap = _events;
+        _isLoading = false;
+      });
+    } catch (error) {
+      print('Error loading events: $error');
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-
   List<Event> _getEventsForDay(DateTime dateKey) {
     return _eventsMap[dateKey] ?? [];
   }
 
   @override
   Widget build(BuildContext context) {
+    
+    if(_isLoading) {
+      return const Center(child:  CircularProgressIndicator());
+    }
     return Scaffold(
       appBar: customAppBar(context, title: "Agenda"),
       drawer: Drawer(
@@ -78,9 +90,11 @@ Map<DateTime, List<Event>> _eventsMap = {};
         children: [
           TableCalendar(
             eventLoader: (day) {
-              final teste = _getEventsForDay(day);
-              print(teste);
-              return _getEventsForDay(day);
+              final events = _getEventsForDay(day);
+                print('Day selected: $day');
+                print('Events: $events');
+                print('Events Map: $_eventsMap');
+                return events;
             },
             locale: 'pt_BR',
             firstDay: DateTime.utc(2000, 1, 1),
@@ -104,6 +118,12 @@ Map<DateTime, List<Event>> _eventsMap = {};
             },
             headerVisible: true,
           ),
+          const SizedBox(height: 20),
+          // Lista de eventos para o dia selecionado
+        if (!_isLoading)
+            Expanded(
+              child: _buildEventList(_selectedDay),
+            ),
         ],
       ),
     );
@@ -143,7 +163,7 @@ Map<DateTime, List<Event>> _eventsMap = {};
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              
+              /*
                 TextButton.icon(
                   onPressed: () {
                     Navigator.push(
@@ -159,7 +179,7 @@ Map<DateTime, List<Event>> _eventsMap = {};
                   ),
                   ),
                 ),
-      
+                */
               
                 TextButton.icon(
                   onPressed: () {
@@ -177,7 +197,7 @@ Map<DateTime, List<Event>> _eventsMap = {};
                   ),
                 ),
       
-                
+                /*
                 TextButton.icon(
                   onPressed: () {
                     Navigator.push(
@@ -193,7 +213,7 @@ Map<DateTime, List<Event>> _eventsMap = {};
                   ),
                   ),
                 ),
-                
+                */
             
                 TextButton.icon(
                   onPressed: () => UserAuthentication().logout(),
@@ -213,6 +233,8 @@ Map<DateTime, List<Event>> _eventsMap = {};
 
   Widget floatingActionButton() {
     return FloatingActionButton(
+      backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+      foregroundColor: Colors.white,
       onPressed: () {
         showDialog(
         context: context,
@@ -246,6 +268,7 @@ Map<DateTime, List<Event>> _eventsMap = {};
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
+                            keyboardType: TextInputType.number,
                             controller: price,
                             textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
@@ -259,8 +282,15 @@ Map<DateTime, List<Event>> _eventsMap = {};
                   child: createButton("Adicionar", () {
                       _userAuthentication.addEventToUser(userID, customer.text, service.text, _selectedDay, hour.text, double.parse(price.text));
                     setState(() {
-                      getEvents();
-                    });    
+                      loadEvents();
+                    });
+                     ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Atendimento agendado com sucesso'),
+                      duration: Duration(seconds: 4),
+                      backgroundColor: Colors.green, // Defina a duração do SnackBar
+                    ),
+                  );    
                   Navigator.of(context).pop();
                   customer.clear();
                   service.clear();
@@ -277,7 +307,82 @@ Map<DateTime, List<Event>> _eventsMap = {};
       child: const Icon(Icons.add),
     );
   }
+
+  Widget _buildEventList(DateTime day) {
+    final selectedEvents = _getEventsForDay(day);
+    
+    return ListView.builder(
+      itemCount: selectedEvents.length,
+      itemBuilder: (context, index) {
+        final event = selectedEvents[index];
+        return GestureDetector(
+           onTap: () {
+    Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => EventDetailsPage(event: event),
+  ),
+).then((_) {
+  setState(() {
+    loadEvents();
+  });
+});
+  },
+          child: Container(
+            margin: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.lightBlue[50], // Define a cor de fundo como azul claro
+              borderRadius: BorderRadius.circular(10), // Define a borda arredondada
+              border: Border.all(color: Colors.lightBlue[200]!), // Define a cor e a largura da borda
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Horário
+                Expanded(
+          flex: 1,
+          child: Text(
+            event.hour,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+                ),
+                // Informações do Cliente e Serviço
+                Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cliente: ${event.customer}',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Serviço: ${event.service}',
+              ),
+            ],
+          ),
+                ),
+                // Valor
+                Expanded(
+          flex: 1,
+          child: Text(
+            'R\$ ${event.price.toStringAsFixed(2)}',
+            textAlign: TextAlign.end,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+      },
+    );
+  }
 }
+
 
 
 
