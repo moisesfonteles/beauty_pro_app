@@ -29,6 +29,8 @@ class _HomePageState extends State<HomePage> {
 
   List<ServiceModel>? services;
 
+  bool _isLoading = true;
+
   final _userAuthentication = UserAuthentication();
 
   late String userID = _userAuthentication.getCurrentUserId() ?? "";
@@ -48,12 +50,38 @@ class _HomePageState extends State<HomePage> {
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
     initHome();
+    loadServices();
+  }
+
+  Map<String, String> extrairDiaEMes(String dataISO) {
+    DateTime data = DateTime.parse(dataISO);
+    int dia = data.day;
+    int mes = data.month;
+
+    List<String> meses = [
+      'janeiro',
+      'fevereiro',
+      'março',
+      'abril',
+      'maio',
+      'junho',
+      'julho',
+      'agosto',
+      'setembro',
+      'outubro',
+      'novembro',
+      'dezembro'
+    ];
+
+    return {
+      'dia': dia.toString(),
+      'mes': meses[mes - 1],
+    };
   }
 
   Future<void> initHome() async {
     services = await _getEvents();
     if (services != null) {
-      _updateEventsMap(services!);
       _serviceController.sink.add(services!);
     } else {
       log("Não foi possível carregar os serviços");
@@ -83,25 +111,28 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _updateEventsMap(List<ServiceModel> services) {
-    _eventsMap.clear(); // Clear existing events
-
-    for (var service in services) {
-      // Check if date is not null or empty
-      if (service.date != null) {
-        // Parse date from service data (assuming it's a string in YYYY-MM-DD format)
-        DateTime serviceDate = DateTime.parse(service.date!);
-
-        // Add service to the events list for the corresponding date
-        if (_eventsMap.containsKey(serviceDate)) {
-          _eventsMap[serviceDate]!.add(service); // Add service directly
-        } else {
-          _eventsMap[serviceDate] = [service]; // Create new list for the date
-        }
-      } else {
-        // Handle the case where date is null or empty (e.g., log an error)
-        print("Serviço com data inválida: ${service.date}");
+  Future<void> loadServices() async {
+    try {
+      final services = await _getEvents();
+      final Map<DateTime, List<ServiceModel>> _services = {};
+      for (ServiceModel service in services!) {
+        // Convertendo a string de data para DateTime
+        DateTime dateTime = DateTime.parse(service.date!);
+        DateTime dateKey =
+            DateTime.utc(dateTime.year, dateTime.month, dateTime.day);
+        _services.putIfAbsent(dateKey, () => []).add(service);
       }
+      setState(() {
+        _eventsMap.clear();
+        _eventsMap.addAll(_services);
+        _serviceController.sink.add(services);
+        _isLoading = false;
+      });
+    } catch (error) {
+      print('Error loading services: $error');
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -173,6 +204,7 @@ class _HomePageState extends State<HomePage> {
                     _selectedDay = selectedDay;
                     _focusedDay = focusedDay;
                   });
+                  _serviceController.sink.add(_getEventsForDay(_selectedDay));
                 },
                 selectedDayPredicate: (day) {
                   return isSameDay(_selectedDay, day);
@@ -191,6 +223,9 @@ class _HomePageState extends State<HomePage> {
                         itemCount: services.length,
                         itemBuilder: (context, index) {
                           ServiceModel service = services[index];
+                          Map<String, String> dataSeparada =
+                              extrairDiaEMes(service.date!);
+
                           return Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Container(
@@ -212,18 +247,18 @@ class _HomePageState extends State<HomePage> {
                                         bottomLeft: Radius.circular(10),
                                       ),
                                     ),
-                                    child: const Column(
+                                    child: Column(
                                       children: [
                                         Text(
-                                          '4',
-                                          style: TextStyle(
+                                          dataSeparada['dia'] ?? "na",
+                                          style: const TextStyle(
                                             fontSize: 26,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.blueAccent,
                                           ),
                                         ),
                                         Text(
-                                          'de maio',
+                                          dataSeparada['mes'] ?? "na",
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: Colors.black,
