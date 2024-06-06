@@ -6,6 +6,7 @@ import 'package:beauty_pro/page/dashboard_page.dart';
 import 'package:beauty_pro/page/edit_account.dart';
 import 'package:beauty_pro/page/edit_add_service_page.dart';
 import 'package:beauty_pro/services/user_authentication.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _HomePageState extends State<HomePage> {
   late String userID = _userAuthentication.getCurrentUserId() ?? "";
   // final _controller = HomeController();
 
-  final Map<DateTime, List<Event>> _eventsMap = {};
+  final Map<DateTime, List<ServiceModel>> _eventsMap = {};
 
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
@@ -42,6 +43,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     _calendarFormat = CalendarFormat.month;
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
@@ -50,28 +52,60 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> initHome() async {
     services = await _getEvents();
-    _serviceController.sink.add(services ?? []);
+    if (services != null) {
+      _updateEventsMap(services!);
+      _serviceController.sink.add(services!);
+    } else {
+      log("Não foi possível carregar os serviços");
+    }
   }
 
   Future<List<ServiceModel>?> _getEvents() async {
     final url = Uri.parse("http://192.168.124.197:3000/listar/$userID");
     final response = await http.get(url);
 
-    try{
+    try {
       if (response.statusCode == 200) {
-        log(response.body);
-        final json = jsonDecode(response.body);
-        return json.map((item) => ServiceModel.fromJson(item));
+        final List<dynamic> json = jsonDecode(response.body);
+
+        final services = json.map<ServiceModel>((item) {
+          return ServiceModel.fromJson(item);
+        }).toList();
+
+        return services;
       } else {
-        log("${response.statusCode}");
+        log("Erro na resposta: ${response.statusCode}");
         return null;
       }
     } catch (e) {
+      log("Erro ao buscar eventos: $e");
       return null;
     }
   }
 
-  List<Event> _getEventsForDay(DateTime dateKey) {
+  void _updateEventsMap(List<ServiceModel> services) {
+    _eventsMap.clear(); // Clear existing events
+
+    for (var service in services) {
+      // Check if date is not null or empty
+      if (service.date != null) {
+        // Parse date from service data (assuming it's a string in YYYY-MM-DD format)
+        DateTime serviceDate = DateTime.parse(service.date!);
+
+        // Add service to the events list for the corresponding date
+        if (_eventsMap.containsKey(serviceDate)) {
+          _eventsMap[serviceDate]!.add(service); // Add service directly
+        } else {
+          _eventsMap[serviceDate] = [service]; // Create new list for the date
+        }
+      } else {
+        // Handle the case where date is null or empty (e.g., log an error)
+        print("Serviço com data inválida: ${service.date}");
+      }
+    }
+  }
+
+  List<ServiceModel> _getEventsForDay(DateTime dateKey) {
     return _eventsMap[dateKey] ?? [];
   }
 
@@ -95,6 +129,14 @@ class _HomePageState extends State<HomePage> {
         }));
     if (response.statusCode != 200) {
       log("Não foi possível registrar o serviço no banco de dados");
+    } else {
+      final model = ServiceModel(
+          customer: custumerApi,
+          service: serviceApi,
+          date: dataApi,
+          hour: hourApi,
+          price: valueApi);
+      services?.add(model);
     }
   }
 
@@ -106,59 +148,147 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
           child: drawerOpitions(context, widget.email!)),
       floatingActionButton: floatingActionButton(),
-      body: Column(
-        children: [
-          TableCalendar(
-            eventLoader: (day) {
-              final teste = _getEventsForDay(day);
-              print(teste);
-              return _getEventsForDay(day);
-            },
-            locale: 'pt_BR',
-            firstDay: DateTime.utc(2000, 1, 1),
-            lastDay: DateTime.utc(2100, 1, 1),
-            focusedDay: _focusedDay,
-            calendarFormat: _calendarFormat,
-            onFormatChanged: (format) {
-              setState(() {
-                _calendarFormat = format;
-              });
-            },
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            selectedDayPredicate: (day) {
-              return isSameDay(_selectedDay, day);
-            },
-            headerVisible: true,
-          ),
-          StreamBuilder<List<ServiceModel>>(
-            stream: _serviceController.stream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                List<ServiceModel> services = snapshot.data ?? [];
-                return ListView.builder(
-                  itemCount: services.length,
-                  itemBuilder: (context, index) {
-                    ServiceModel service = services[index];
-                    return ListTile(
-                      title: Text(service.customer ?? "Cliente indisponível"),
-                      subtitle: Text(service.price ?? "Preço indisponível"),
-                      trailing: Text('\$${service.service}'),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              TableCalendar(
+                eventLoader: (day) {
+                  final teste = _getEventsForDay(day);
+                  print(teste);
+                  return _getEventsForDay(day);
+                },
+                locale: 'pt_BR',
+                firstDay: DateTime.utc(2000, 1, 1),
+                lastDay: DateTime.utc(2100, 1, 1),
+                focusedDay: _focusedDay,
+                calendarFormat: _calendarFormat,
+                onFormatChanged: (format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                },
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                },
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+                headerVisible: true,
+              ),
+              StreamBuilder<List<ServiceModel>>(
+                stream: _serviceController.stream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    List<ServiceModel> services = snapshot.data ?? [];
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height / 2,
+                      child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: services.length,
+                        itemBuilder: (context, index) {
+                          ServiceModel service = services[index];
+                          return Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Container(
+                              width: 150,
+                              height: 100,
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        bottomLeft: Radius.circular(10),
+                                      ),
+                                    ),
+                                    child: const Column(
+                                      children: [
+                                        Text(
+                                          '4',
+                                          style: TextStyle(
+                                            fontSize: 26,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ),
+                                        Text(
+                                          'de maio',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            service.customer ??
+                                                "Não encontrado",
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          Text(
+                                            service.service ?? "Não encontrado",
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: Alignment.bottomRight,
+                                            child: Text(
+                                              '\$${service.price}',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     );
-                  },
-                );
-              } else if (snapshot.hasError) {
-                return const Text('Não foi possível carregar os Serviços');
-              } else {
-                return const CircularProgressIndicator();
-              }
-            },
+                  } else if (snapshot.hasError) {
+                    return const Text('Não foi possível carregar os Serviços');
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -197,6 +327,14 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          TextButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.work, size: 40, color: Colors.white),
+            label: const Text(
+              "IJob",
+              style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
+          ),
           TextButton.icon(
             onPressed: () {
               Navigator.push(
