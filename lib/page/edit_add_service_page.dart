@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:rxdart/rxdart.dart';
 import 'package:beauty_pro/model/service.dart';
+import 'package:beauty_pro/services/user_authentication.dart';
 import 'package:beauty_pro/page/service_detail_page.dart';
 
 class EditAddServicePage extends StatefulWidget {
@@ -33,8 +34,13 @@ class _EditAddServicePageState extends State<EditAddServicePage> {
     super.dispose();
   }
 
+  final _userAuthentication = UserAuthentication();
+
+  late String userID = _userAuthentication.getCurrentUserId() ?? "";
+
   Future<void> _fetchServices() async {
-    final url = Uri.parse("http://192.168.124.164:3000/listar");
+    final url =
+        Uri.parse("http://192.168.124.164:3000/listarDiferente/$userID");
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

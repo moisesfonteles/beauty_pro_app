@@ -1,4 +1,5 @@
 class ServiceModel {
+  final int? id;
   final String? customer;
   final String? service;
   final String? date;
@@ -7,7 +8,8 @@ class ServiceModel {
   final int? avaliacao;
 
   ServiceModel(
-      {this.customer,
+      {this.id,
+      this.customer,
       this.service,
       this.date,
       this.hour,
@@ -16,6 +18,7 @@ class ServiceModel {
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
     return ServiceModel(
+        id: json['id'] as int,
         customer: json['customer'] as String,
         service: json['service'] as String,
         date: json['date'] as String,

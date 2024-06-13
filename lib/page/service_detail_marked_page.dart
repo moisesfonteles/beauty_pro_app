@@ -1,4 +1,5 @@
 import 'package:beauty_pro/page/edit_add_service_page.dart';
+import 'package:beauty_pro/page/home_page.dart';
 import 'package:beauty_pro/services/user_authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:beauty_pro/model/service.dart';
@@ -7,17 +8,20 @@ import 'package:http/http.dart' as http;
 import 'package:mailto/mailto.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ServiceDetailPage extends StatefulWidget {
+class ServiceDetailMarkedPage extends StatefulWidget {
   final ServiceModel service;
+  final String? email;
 
-  const ServiceDetailPage({Key? key, required this.service}) : super(key: key);
+  const ServiceDetailMarkedPage(
+      {Key? key, required this.service, required this.email})
+      : super(key: key);
 
   @override
-  _ServiceDetailPageState createState() => _ServiceDetailPageState();
+  _ServiceDetailMarkedPageState createState() =>
+      _ServiceDetailMarkedPageState();
 }
 
-class _ServiceDetailPageState extends State<ServiceDetailPage> {
-  int _rating = 0;
+class _ServiceDetailMarkedPageState extends State<ServiceDetailMarkedPage> {
   final _userAuthentication = UserAuthentication();
 
   TextEditingController emailBody = TextEditingController();
@@ -27,11 +31,6 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
   @override
   void initState() {
     super.initState();
-    fetchRating();
-  }
-
-  void fetchRating() {
-    _rating = widget.service.avaliacao!;
   }
 
   @override
@@ -79,37 +78,10 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Avaliação:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            _buildStarRating(),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _submitRating,
-              child: const Text('Avaliar'),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Dúvidas:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            TextFormField(
-              controller: emailBody,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async =>
-                  await _sendEmail("jp53@edu.unifor.br", emailBody.text),
-              child: const Text('Enviar email'),
+              onPressed: _deleteService,
+              child: const Text('Deletar Serviço'),
             ),
           ],
         ),
@@ -117,53 +89,32 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     );
   }
 
-  Widget _buildStarRating() {
-    return Row(
-      children: List.generate(5, (index) {
-        return IconButton(
-          onPressed: () {
-            setState(() {
-              _rating = index + 1;
-            });
-          },
-          icon: Icon(
-            index < _rating ? Icons.star : Icons.star_border,
-            color: Colors.yellow,
-          ),
-        );
-      }),
-    );
-  }
-
-  void _submitRating() async {
-    final url = Uri.parse('http://192.168.124.164:3000/avaliar/$userID');
-    final response = await http.put(
-      url,
-      body: {
-        'avaliacao': _rating.toString(),
-      },
-    );
+  Future<void> _deleteService() async {
+    final url =
+        Uri.parse('http://192.168.124.164:3000/deletar/${widget.service.id}');
+    final response = await http.delete(url);
 
     if (response.statusCode == 200) {
-      print('Avaliação enviada com sucesso!');
+      print('Serviço deletado com sucesso!');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Serviço avaliado com sucesso!'),
+          content: Text('Serviço deletado com sucesso!'),
           duration: Duration(seconds: 3), // Duração do SnackBar
         ),
       );
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const EditAddServicePage()),
+        MaterialPageRoute(
+            builder: (context) => HomePage(
+                  email: widget.email,
+                )),
+        (Route<dynamic> route) => false,
       );
       // Aqui você pode adicionar a lógica para lidar com o sucesso da operação
     } else {
-      print('Erro ao enviar avaliação: ${response.statusCode}');
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Erro ao enviar avaliação. Tente novamente mais tarde.'),
+          content: Text('Erro ao deletadar. Tente novamente mais tarde.'),
           duration: Duration(seconds: 3), // Duração do SnackBar
         ),
       );
@@ -181,15 +132,4 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
       ),
     );
   }
-}
-
-Future<void> _sendEmail(String toEmail, String body) async {
-  final mailtoLink = Mailto(
-    to: [toEmail],
-    subject: "Contratar serviço",
-    body: body,
-  );
-
-  final url = mailtoLink.toString();
-  await launch(url);
 }

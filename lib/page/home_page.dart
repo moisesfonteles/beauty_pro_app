@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:ffi';
+import 'package:beauty_pro/page/service_detail_marked_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -107,6 +108,18 @@ class _HomePageState extends State<HomePage> {
       log("Erro ao buscar eventos: $e");
       return null;
     }
+  }
+
+  void _navigateToServiceDetail(ServiceModel service) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ServiceDetailMarkedPage(
+          service: service,
+          email: widget.email,
+        ),
+      ),
+    );
   }
 
   Future<void> loadServices() async {
@@ -226,89 +239,93 @@ class _HomePageState extends State<HomePage> {
                           Map<String, String> dataSeparada =
                               extrairDiaEMes(service.date!);
 
-                          return Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Container(
-                              width: 150,
-                              height: 100,
+                          return GestureDetector(
+                            onTap: () => _navigateToServiceDetail(service),
+                            child: Padding(
                               padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                color: const Color.fromRGBO(20, 28, 95, 1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(10),
-                                        bottomLeft: Radius.circular(10),
+                              child: Container(
+                                width: 150,
+                                height: 100,
+                                padding: const EdgeInsets.all(10.0),
+                                decoration: BoxDecoration(
+                                  color: const Color.fromRGBO(20, 28, 95, 1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          bottomLeft: Radius.circular(10),
+                                        ),
                                       ),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          dataSeparada['dia'] ?? "na",
-                                          style: const TextStyle(
-                                            fontSize: 26,
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                Color.fromRGBO(20, 28, 95, 1),
-                                          ),
-                                        ),
-                                        Text(
-                                          dataSeparada['mes'] ?? "na",
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10.0),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            service.customer ??
-                                                "Não encontrado",
+                                            dataSeparada['dia'] ?? "na",
                                             style: const TextStyle(
-                                              fontSize: 20,
+                                              fontSize: 26,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                              color:
+                                                  Color.fromRGBO(20, 28, 95, 1),
                                             ),
                                           ),
                                           Text(
-                                            service.service ?? "Não encontrado",
+                                            dataSeparada['mes'] ?? "na",
                                             style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: Alignment.bottomRight,
-                                            child: Text(
-                                              '\$${service.price}',
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.white,
-                                              ),
+                                              fontSize: 10,
+                                              color: Colors.black,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              service.customer ??
+                                                  "Não encontrado",
+                                              style: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            Text(
+                                              service.service ??
+                                                  "Não encontrado",
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            Align(
+                                              alignment: Alignment.bottomRight,
+                                              child: Text(
+                                                '\$${service.price}',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
