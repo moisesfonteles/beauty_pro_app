@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:beauty_pro/model/event.dart';
+import 'dart:ffi';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:rxdart/rxdart.dart';
+import 'package:table_calendar/table_calendar.dart';
+
 import 'package:beauty_pro/model/service.dart';
-import 'package:beauty_pro/page/dashboard_page.dart';
 import 'package:beauty_pro/page/edit_account.dart';
 import 'package:beauty_pro/page/edit_add_service_page.dart';
 import 'package:beauty_pro/services/user_authentication.dart';
-import 'package:flutter/services.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:table_calendar/table_calendar.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   String? email;
@@ -28,8 +28,6 @@ class _HomePageState extends State<HomePage> {
   final _serviceController = BehaviorSubject<List<ServiceModel>>();
 
   List<ServiceModel>? services;
-
-  bool _isLoading = true;
 
   final _userAuthentication = UserAuthentication();
 
@@ -89,7 +87,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<List<ServiceModel>?> _getEvents() async {
-    final url = Uri.parse("http://192.168.124.197:3000/listar/$userID");
+    final url = Uri.parse("http://192.168.124.164:3000/listar/$userID");
     final response = await http.get(url);
 
     try {
@@ -125,14 +123,10 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _eventsMap.clear();
         _eventsMap.addAll(_services);
-        _serviceController.sink.add(services);
-        _isLoading = false;
+        _serviceController.sink.add(_getEventsForDay(_selectedDay));
       });
     } catch (error) {
-      print('Error loading services: $error');
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() {});
     }
   }
 
@@ -146,8 +140,9 @@ class _HomePageState extends State<HomePage> {
       String serviceApi,
       String dataApi,
       String hourApi,
-      String valueApi) async {
-    final url = Uri.parse("http://192.168.124.197:3000/registrar");
+      String valueApi,
+      int avaliacaoApi) async {
+    final url = Uri.parse("http://192.168.124.164:3000/registrar");
     final response = await http.post(url,
         headers: {'Content-Type': "application/json"},
         body: json.encode({
@@ -156,7 +151,8 @@ class _HomePageState extends State<HomePage> {
           'service': serviceApi,
           'date': dataApi,
           'hour': hourApi,
-          'price': valueApi
+          'price': valueApi,
+          'avaliacao': avaliacaoApi
         }));
     if (response.statusCode != 200) {
       log("Não foi possível registrar o serviço no banco de dados");
@@ -168,6 +164,12 @@ class _HomePageState extends State<HomePage> {
           hour: hourApi,
           price: valueApi);
       services?.add(model);
+
+      // Atualizar o StreamController com a nova lista de serviços
+      _serviceController.sink.add(List.from(services!));
+
+      // Recarregar os eventos no calendário
+      loadServices();
     }
   }
 
@@ -185,8 +187,6 @@ class _HomePageState extends State<HomePage> {
             children: [
               TableCalendar(
                 eventLoader: (day) {
-                  final teste = _getEventsForDay(day);
-                  print(teste);
                   return _getEventsForDay(day);
                 },
                 locale: 'pt_BR',
@@ -204,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                     _selectedDay = selectedDay;
                     _focusedDay = focusedDay;
                   });
-                  _serviceController.sink.add(_getEventsForDay(_selectedDay));
+                  _serviceController.sink.add(_getEventsForDay(_focusedDay));
                 },
                 selectedDayPredicate: (day) {
                   return isSameDay(_selectedDay, day);
@@ -233,7 +233,7 @@ class _HomePageState extends State<HomePage> {
                               height: 100,
                               padding: const EdgeInsets.all(10.0),
                               decoration: BoxDecoration(
-                                color: Colors.blueAccent,
+                                color: const Color.fromRGBO(20, 28, 95, 1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
@@ -254,12 +254,13 @@ class _HomePageState extends State<HomePage> {
                                           style: const TextStyle(
                                             fontSize: 26,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.blueAccent,
+                                            color:
+                                                Color.fromRGBO(20, 28, 95, 1),
                                           ),
                                         ),
                                         Text(
                                           dataSeparada['mes'] ?? "na",
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 10,
                                             color: Colors.black,
                                           ),
@@ -331,7 +332,7 @@ class _HomePageState extends State<HomePage> {
   AppBar customAppBar(BuildContext context, {String title = ''}) {
     return AppBar(
       centerTitle: true,
-      backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+      backgroundColor: const Color.fromRGBO(20, 28, 95, 1),
       title: Text(
         title,
         style: const TextStyle(color: Colors.white),
@@ -387,26 +388,13 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => DashboardPage()),
-              );
-            },
-            icon: const Icon(Icons.dashboard, size: 40, color: Colors.white),
-            label: const Text(
-              'Dashboard',
-              style: TextStyle(fontSize: 18, color: Colors.white),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
                 MaterialPageRoute(
                     builder: (context) => const EditAddServicePage()),
               );
             },
-            icon: const Icon(Icons.settings, size: 40, color: Colors.white),
+            icon: const Icon(Icons.search, size: 40, color: Colors.white),
             label: const Text(
-              'Gerenciar serviços',
+              'Buscar serviços',
               style: TextStyle(fontSize: 18, color: Colors.white),
             ),
           ),
@@ -431,7 +419,7 @@ class _HomePageState extends State<HomePage> {
             builder: (context) {
               return AlertDialog(
                 scrollable: true,
-                title: const Text('Adiconar atendimento'),
+                title: const Text('Adicionar serviço'),
                 content: Padding(
                   padding: const EdgeInsets.all(8),
                   child: Column(
@@ -475,15 +463,13 @@ class _HomePageState extends State<HomePage> {
                               service.text,
                               _selectedDay.toIso8601String(),
                               hour.text,
-                              price.text)
+                              price.text,
+                              0)
                           .catchError((error) => ScaffoldMessenger.of(context)
                               .showSnackBar(SnackBar(
                                   content: Text(
                                       'Falha ao adicionar evento: $error'))));
 
-                      setState(() {
-                        _getEvents();
-                      });
                       Navigator.of(context).pop();
                       customer.clear();
                       service.clear();

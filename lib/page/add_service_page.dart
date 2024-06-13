@@ -1,7 +1,5 @@
 import 'package:beauty_pro/page/home_page.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class AddServicePage extends StatefulWidget {
   const AddServicePage({super.key});
@@ -32,7 +30,6 @@ class _AddServicePageState extends State<AddServicePage> {
       "name": "Serviço B",
       "value": "R\$200",
     },
-  
   ];
 
   @override
@@ -93,7 +90,7 @@ class _AddServicePageState extends State<AddServicePage> {
                     children: [
                       Text(
                         service["name"]!,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(service["value"]!),
