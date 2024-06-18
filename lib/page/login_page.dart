@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(25, 128, 25, 25),
       child: Column(
-        children: [Image.asset("assets/logo.png"), loginWidget(context)],
+        children: [Image.asset("assets/logoijobs.png"), loginWidget(context)],
       ),
     );
   }
@@ -86,7 +86,7 @@ Widget createButton(String label, VoidCallback onPressed, bool loggingIn) {
       child: ElevatedButton(
         onPressed:loggingIn ? () {} : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromRGBO(39, 144, 176, 1),
+          backgroundColor:  const Color.fromRGBO(20, 28, 95, 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
         child: loggingIn ? const CircularProgressIndicator(color: Colors.white) : Text(

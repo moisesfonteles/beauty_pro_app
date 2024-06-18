@@ -4,18 +4,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(
+ initializeDateFormatting().then((_) => runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         buttonTheme:const ButtonThemeData (
-          buttonColor: Color.fromRGBO(39, 144, 176, 1),
+          buttonColor: Color.fromRGBO(20, 28, 95, 1),
         ),
         appBarTheme: const AppBarTheme(
             iconTheme: IconThemeData(color: Colors.white)),
@@ -23,7 +24,7 @@ Future<void> main() async {
       ),
       home: const UserAuth(),
     )
-  );
+  ));
 }
 
 class UserAuth extends StatelessWidget {
@@ -35,7 +36,7 @@ class UserAuth extends StatelessWidget {
       stream: FirebaseAuth.instance.userChanges(),
       builder: (context, snapshot) {
         if(snapshot.hasData) {          
-          return const HomePage();
+          return  HomePage(email: snapshot.data!.email);
         } else {
           return const LoginPage();
         }

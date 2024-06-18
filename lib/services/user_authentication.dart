@@ -1,4 +1,7 @@
+import 'package:beauty_pro/model/event.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+ 
 
 class UserAuthentication{
   
@@ -6,7 +9,7 @@ class UserAuthentication{
 
   Future<String?> registerUser({
     required String name,
-    required String company,
+    required String job,
     required String phone,
     required String email,
     required String password
@@ -18,6 +21,15 @@ class UserAuthentication{
       );
 
       await userCredential.user!.updateDisplayName(name);
+
+      await FirebaseFirestore.instance.collection('userIjobs').doc(userCredential.user!.uid).set({
+      'name': name,
+      'email': email,
+      'job': job,
+      'phone': phone,
+    });
+
+      
 
       return null;
 
@@ -60,5 +72,69 @@ class UserAuthentication{
       }
     }
   }
+
+  Future<void> addEventToUser(
+    String userId,
+     String customer,
+      String service,
+       DateTime date,
+        String hour,
+        double price
+        ) async {
+  try {
+    await FirebaseFirestore.instance.collection('users').doc(userId).collection('events').add({
+      'customer': customer,
+      'service': service,
+      'date': date,
+      'hour': hour,
+      'price': price
+      
+    });
+  } catch (e) {
+    print('Erro ao adicionar evento ao usuário: $e');
+  }
+
+ 
+}
+
+ String? getCurrentUserId() {
+  FirebaseAuth auth = FirebaseAuth.instance;
+  User? user = auth.currentUser;
+  
+  if (user != null) {
+    return user.uid;
+  } else {
+    
+    return null;
+  }
+}
+
+Future<List<Event>> fetchEventsFromFirestore(String userID) async {
+  final events = <Event>[];
+
+  try {
+    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .collection('events')
+        .get();
+
+    snapshot.docs.forEach((doc) {
+      Timestamp timestamp = doc['date'];
+      DateTime date = timestamp.toDate();
+      String customer = doc['customer'];
+      String hour = doc['hour'];
+      double price = doc['price'];
+      String service = doc['service']; // Replace with actual property name
+
+      events.add(Event(date: date, customer: customer, hour: hour, price: price, service: service));
+    });
+  } catch (error) {
+    print('Error fetching events: $error');
+  }
+
+  return events;
+}
+
 
 }

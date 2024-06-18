@@ -76,7 +76,7 @@ class SignUpController{
       signingUpController.sink.add(signingUp);
       await _userAuthentication.registerUser(
         name: nameController.text,
-        company: companyController.text,
+        job: companyController.text,
         phone: phoneController.text,
         email: emailController.text,
         password: passwordController.text
